@@ -46,7 +46,7 @@ export class Spotify {
 		setTimeout(
 			() =>
 				this.renew().catch(() =>
-					console.error('[meonglink#Spotify] Error while renewing Spotify token :c')
+					this.manager.emit('Debug', '[meonglink#Spotify] Error while renewing Spotify token :c')
 				),
 			expiresIn
 		);
@@ -76,6 +76,7 @@ export class Spotify {
 
 		this.token = `Bearer ${access_token}`;
 		if (!this.ready) this.ready = true;
+		this.manager.emit('Debug', '[meonglink#Spotify] Spotify token renewed.');
 		return expires_in * 1000;
 	}
 
@@ -256,9 +257,7 @@ export class Spotify {
 					Authorization: this.token
 				}
 			}
-		)
-			.then(x => x.json())
-			.then(x => ({ data: x as any }));
+		).then(x => x.json() as Promise<any>);
 
 		return data[typePlural]!;
 	}
@@ -442,7 +441,7 @@ export class Spotify {
 					Authorization: this.token
 				}
 			}
-		);
+		).then(x => x.json());
 
 		return res;
 	}

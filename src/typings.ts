@@ -218,6 +218,7 @@ export interface MeongEvents {
 	TrackError: [player: Player, track: Track | null, payload: TrackExceptionEvent];
 	QueueEnd: [player: Player, track: Track, payload: TrackEndEvent];
 	SocketClosed: [player: Player, payload: WebSocketClosedEvent];
+	Debug: [message: string];
 }
 
 export type PlayerEventType =
@@ -280,15 +281,17 @@ export interface WebSocketClosedEvent extends PlayerEvent {
 }
 
 export type PlayerFilter =
-	| 'Karaoke'
 	| '8d'
-	| 'Treblebass'
-	| 'Soft'
-	| 'Pop'
 	| 'Bassboost'
-	| 'Vaporwave'
+	| 'Classical'
+	| 'Karaoke'
+	| 'Lovenightcore'
 	| 'Nightcore'
+	| 'Pop'
+	| 'Soft'
+	| 'Treblebass'
 	| 'Tremolo'
+	| 'Vaporwave'
 	| 'Vibrato'
 	| 'None';
 

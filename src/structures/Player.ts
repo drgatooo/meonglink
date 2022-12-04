@@ -373,8 +373,7 @@ export class Player {
 						{ band: 1, gain: 0.3 },
 						{ band: 0, gain: 0.3 }
 					],
-					timescale: { pitch: 0.800000011920929, speed: 0.8500000238418579, rate: 1 },
-					tremolo: { depth: 0.3, frequency: 14 }
+					timescale: { pitch: 0.800000011920929, speed: 0.8500000238418579, rate: 1 }
 				};
 				break;
 			}
@@ -394,19 +393,20 @@ export class Player {
 					op: 'filters',
 					equalizer: [
 						{ band: 0, gain: 0.6 },
-						{ band: 1, gain: 0.67 },
-						{ band: 2, gain: 0.67 },
-						{ band: 3, gain: 0 },
-						{ band: 4, gain: -0.5 },
-						{ band: 5, gain: 0.15 },
-						{ band: 6, gain: -0.45 },
-						{ band: 7, gain: 0.23 },
-						{ band: 8, gain: 0.35 },
-						{ band: 9, gain: 0.45 },
-						{ band: 10, gain: 0.55 },
-						{ band: 11, gain: 0.6 },
-						{ band: 12, gain: 0.55 },
-						{ band: 13, gain: 0 }
+						{ band: 1, gain: 0.7 },
+						{ band: 2, gain: 0.8 },
+						{ band: 3, gain: 0.55 },
+						{ band: 4, gain: 0.25 },
+						{ band: 5, gain: 0 },
+						{ band: 6, gain: -0.25 },
+						{ band: 7, gain: -0.45 },
+						{ band: 8, gain: -0.55 },
+						{ band: 9, gain: -0.7 },
+						{ band: 10, gain: -0.3 },
+						{ band: 11, gain: -0.25 },
+						{ band: 12, gain: 0 },
+						{ band: 13, gain: 0 },
+						{ band: 14, gain: 0 }
 					]
 				};
 				break;
@@ -510,6 +510,42 @@ export class Player {
 					tremolo: {
 						frequency: 10,
 						depth: 0.5
+					}
+				};
+				break;
+			}
+
+			case 'Classical': {
+				data = {
+					op: 'filters',
+					equalizer: [
+						{ band: 0, gain: 0.375 },
+						{ band: 1, gain: 0.35 },
+						{ band: 2, gain: 0.125 },
+						{ band: 3, gain: 0 },
+						{ band: 4, gain: 0 },
+						{ band: 5, gain: 0.125 },
+						{ band: 6, gain: 0.55 },
+						{ band: 7, gain: 0.05 },
+						{ band: 8, gain: 0.125 },
+						{ band: 9, gain: 0.25 },
+						{ band: 10, gain: 0.2 },
+						{ band: 11, gain: 0.25 },
+						{ band: 12, gain: 0.3 },
+						{ band: 13, gain: 0.25 },
+						{ band: 14, gain: 0.3 }
+					]
+				};
+				break;
+			}
+
+			case 'Lovenightcore': {
+				data = {
+					op: 'filters',
+					timescale: {
+						speed: 1.1,
+						pitch: 1.2,
+						rate: 1.0
 					}
 				};
 				break;

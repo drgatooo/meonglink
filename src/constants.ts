@@ -8,15 +8,17 @@ export const platform_codes = {
 };
 
 export const FilterString = [
-	'Karaoke',
 	'8d',
-	'Treblebass',
-	'Soft',
-	'Pop',
 	'Bassboost',
-	'Vaporwave',
+	'Classical',
+	'Karaoke',
+	'Lovenightcore',
 	'Nightcore',
+	'Pop',
+	'Soft',
+	'Treblebass',
 	'Tremolo',
+	'Vaporwave',
 	'Vibrato',
 	'None'
 ] as const;
