@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { fetch } from 'undici';
 import { platform_codes } from '../../constants';
 import type { MeongLink, Player } from '../../structures';
 import type {
@@ -7,16 +7,14 @@ import type {
 	LavalinkTrack,
 	SearchResult,
 	Track,
-	Unpartial
-} from '../../typings';
-import type {
+	Unpartial,
 	CompleteDeezerAlbum,
 	DeezerCustomResponse,
 	DeezerPlaylist,
 	DeezerSearchResult,
 	DeezerTrack,
 	PartialDeezerTrack
-} from './typings';
+} from '../../typings';
 
 export class Deezer {
 	private BASE_URL = 'https://api.deezer.com';
@@ -26,14 +24,15 @@ export class Deezer {
 	public constructor(public options: Unpartial<DeezerOptions>, public manager: MeongLink) {}
 
 	private async makeRequest<T>(endpoint: string): Promise<T> {
-		const res = await axios({
-			method: 'GET',
-			url: endpoint.startsWith('https://')
-				? endpoint
-				: `${this.BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+		const url = endpoint.startsWith('https://')
+			? endpoint
+			: `${this.BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
+		const res: any = await fetch(url, {
+			method: 'GET'
 		});
 
-		return res.data;
+		return res;
 	}
 
 	// Plugin Search

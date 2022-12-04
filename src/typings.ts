@@ -296,3 +296,300 @@ export interface Filter {
 	op: 'filters';
 	[k: string]: any;
 }
+
+// Deezer
+export interface DeezerSearchResult {
+	data: PartialDeezerTrack[];
+	total: number;
+	next: string;
+}
+
+export interface DeezerTrack extends PartialDeezerTrack {
+	error?: unknown;
+	isrc: string;
+	share: string;
+	track_position: number;
+	disk_number: number;
+	release_date: string;
+	bpm: number;
+	gain: number;
+	available_countries: string[];
+	contributors: Array<Omit<DeezerArtist, 'nb_fan' | 'nb_album'> & { role: string }>;
+	artist: Omit<DeezerArtist, 'nb_fan' | 'nb_album'> & { role: string };
+	album: DeezerAlbum;
+	type: 'track';
+}
+
+export interface PartialDeezerTrack {
+	id: number;
+	readable: boolean;
+	title: string;
+	title_short: string;
+	title_version: string;
+	link: string;
+	duration: number;
+	rank: number;
+	explicit_lyrics: boolean;
+	explicit_content_lyrics: number;
+	explicit_content_cover: number;
+	preview: string;
+	md5_image: string;
+	artist: PartialDeezerArtist;
+	album: PartialDeezerAlbum;
+	type: 'track';
+}
+
+export interface PartialDeezerGenre {
+	id: number;
+	name: string;
+	picture: string;
+	type: 'genre';
+}
+
+export interface CompleteDeezerAlbum extends DeezerAlbum {
+	error?: unknown;
+	genre_id: number;
+	genres: {
+		data: PartialDeezerGenre[];
+	};
+	label: string;
+	nb_tracks: number;
+	fans: number;
+	available: boolean;
+	contributors: Array<Omit<DeezerArtist, 'nb_fan' | 'nb_album'> & { role: string }>;
+	artist: Omit<DeezerArtist, 'nb_fan' | 'nb_album'> & { role: string };
+	tracks: {
+		data: PartialDeezerTrack[];
+	};
+}
+
+export interface DeezerAlbum extends PartialDeezerAlbum {
+	link: string;
+	release_date: string;
+}
+
+export interface PartialDeezerAlbum {
+	id: number;
+	title: string;
+	cover: string;
+	cover_small: string;
+	cover_medium: string;
+	cover_big: string;
+	cover_xl: string;
+	md5_image: string;
+	tracklist: string;
+	type: 'album';
+}
+
+export interface DeezerArtist extends PartialDeezerArtist {
+	error?: unknown;
+	share: string;
+	nb_album: number;
+	nb_fan: number;
+	radio: boolean;
+}
+
+export interface PartialDeezerArtist {
+	id: number;
+	name: string;
+	link: string;
+	picture: string;
+	picture_small: string;
+	picture_medium: string;
+	picture_big: string;
+	picture_xl: string;
+	tracklist: string;
+	type: 'artist';
+}
+
+export interface DeezerPlaylist {
+	error?: unknown;
+	id: number;
+	title: string;
+	description: string;
+	duration: number;
+	public: boolean;
+	is_loved_track: boolean;
+	collaborative: boolean;
+	nb_tracks: number;
+	fans: number;
+	link: string;
+	share: string;
+	picture: string;
+	picture_small: string;
+	picture_medium: string;
+	picture_big: string;
+	picture_xl: string;
+	checksum: string;
+	tracklist: string;
+	creation_date: string;
+	md5_image: string;
+	picture_type: 'playlist';
+	creator: {
+		id: number;
+		name: string;
+		tracklist: string;
+		type: 'user';
+	};
+	type: 'playlist';
+	tracks: {
+		data: PartialDeezerTrack[];
+	};
+}
+
+export interface DeezerCustomResponse {
+	error?: boolean;
+	tracks: DeezerTrack[];
+	name?: string;
+	thumbnail?: string;
+}
+
+// Spotify
+export interface SpotifyTokenResponse {
+	access_token: string | null;
+	expires_in: number | null;
+}
+
+export interface SpotifyArts {
+	height: number;
+	url: string;
+	width: number;
+}
+
+export interface SpotifyAlbum extends SpotifyPartialAlbum {
+	copyrights: Array<{
+		text: string;
+		type: string;
+	}>;
+	genres: string[];
+	label: string;
+	tracks: {
+		href: string;
+		items: SpotifyPartialTrack[];
+		limit: number;
+		next: null | string;
+		offset: number;
+		previous: null | string;
+		total: number;
+	};
+}
+
+export interface SpotifyPartialAlbum {
+	album_type: string;
+	artists: Artist[];
+	available_markets: string[];
+	external_urls: {
+		spotify: string;
+	};
+	href: string;
+	id: string;
+	images: SpotifyArts[];
+	name: string;
+	release_date: string;
+	release_date_precision: string;
+	total_tracks: number;
+	type: string;
+	uri: string;
+}
+
+export interface SpotifyPartialTrack {
+	artists: Artist[];
+	available_markets: string[];
+	disc_number: number;
+	duration_ms: number;
+	explicit: boolean;
+	external_urls: {
+		spotify: string;
+	};
+	href: string;
+	id: string;
+	is_local?: boolean;
+	name: string;
+	preview_url: string;
+	track_number: number;
+	type: string;
+	uri: string;
+}
+
+export interface SpotifyTrack extends SpotifyPartialTrack {
+	album: SpotifyPartialAlbum;
+	external_ids: {
+		isrc: string;
+	};
+	popularity: number;
+}
+
+export interface Artist {
+	external_urls: {
+		spotify: string;
+	};
+	href: string;
+	id: string;
+	name: string;
+	type: string;
+	uri: string;
+}
+
+export interface SpotifyArtist {
+	external_urls: {
+		spotify: string;
+	};
+	followers: {
+		href: string | null;
+		total: number;
+	};
+	genres: string[];
+	href: string;
+	id: string;
+	images: SpotifyArts[];
+	name: string;
+	popularity: string;
+	type: 'artist';
+	uri: string;
+}
+
+export interface SpotifyAlbumTracks {
+	items: SpotifyPartialTrack[];
+	next: string | null;
+}
+
+export interface SpotifyPlaylistTracks {
+	items: Array<{ track: SpotifyTrack }>;
+	next: string | null;
+	previous: string | null;
+}
+
+export interface SpotifyPlaylist {
+	name: string;
+	tracks: SpotifyPlaylistTracks;
+	images: SpotifyArts[];
+	id: string;
+	type: 'playlist';
+}
+
+export interface SpotifyArtistTracks {
+	tracks: SpotifyTrack[];
+}
+
+export interface SpotifySearchResult<T extends 'tracks' | 'albums' | 'playlists' | 'artists'> {
+	href: string;
+	items: T extends 'tracks'
+		? SpotifyTrack[]
+		: T extends 'albums'
+		? SpotifyAlbum[]
+		: T extends 'playlists'
+		? SpotifyPlaylist[]
+		: SpotifyArtist[];
+	limit: number;
+	next: string | null;
+	offset: number;
+	previous: string | null;
+	total: number;
+}
+
+export interface SpotifyCustomResponse {
+	error?: boolean;
+	tracks: SpotifyTrack[];
+	name?: string;
+	thumbnail?: string;
+}

@@ -4,9 +4,7 @@ import type {
 	SearchResult,
 	SpotifyOptions,
 	Track,
-	Unpartial
-} from '../../typings';
-import type {
+	Unpartial,
 	SpotifyAlbum,
 	SpotifyAlbumTracks,
 	SpotifyArtist,
@@ -16,9 +14,10 @@ import type {
 	SpotifyPlaylist,
 	SpotifyPlaylistTracks,
 	SpotifySearchResult,
-	SpotifyTrack
-} from './typings';
-import axios from 'axios';
+	SpotifyTrack,
+	SpotifyTokenResponse
+} from '../../typings';
+import { fetch } from 'undici';
 import type { MeongLink } from '../../structures/MeongLink';
 import { Utils } from '../../structures/Util';
 import type { Player } from '../../structures/Player';
@@ -52,20 +51,23 @@ export class Spotify {
 			expiresIn
 		);
 	}
+
 	private async renewToken() {
-		const { data }: { data: SpotifyTokenResponse } = await axios({
-			method: 'POST',
-			url: 'https://accounts.spotify.com/api/token',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Authorization': this.authorization
-			},
-			params: {
-				grant_type: 'client_credentials'
+		const { data }: { data: SpotifyTokenResponse } = await fetch(
+			'https://accounts.spotify.com/api/token?grant_type=client_credentials',
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Authorization': this.authorization
+				}
 			}
-		}).catch(() => {
-			return { data: { access_token: null, expires_in: null } };
-		});
+		)
+			.then(x => x.json())
+			.then(x => ({ data: x as any }))
+			.catch(() => {
+				return { data: { access_token: null, expires_in: null } };
+			});
 
 		const { access_token, expires_in } = data;
 		if (!access_token || !expires_in) {
@@ -239,25 +241,24 @@ export class Spotify {
 	) {
 		const typePlural = `${type}s` as const;
 
-		const {
-			data
-		}: {
-			data: {
-				[k: string]: SpotifySearchResult<typeof typePlural>;
-			};
-		} = await axios({
-			method: 'GET',
-			url: 'https://api.spotify.com/v1/search',
-			headers: {
-				Authorization: this.token
-			},
-			params: {
-				q: query,
-				type,
-				market: this.options.market,
-				limit
-			}
+		const params = new URLSearchParams({
+			q: query,
+			type,
+			market: this.options.market,
+			limit: limit.toString()
 		});
+
+		const data: { [k: string]: SpotifySearchResult<typeof typePlural> } = await fetch(
+			`https://api.spotify.com/v1/search?${params.toString()}`,
+			{
+				method: 'GET',
+				headers: {
+					Authorization: this.token
+				}
+			}
+		)
+			.then(x => x.json())
+			.then(x => ({ data: x as any }));
 
 		return data[typePlural]!;
 	}
@@ -429,20 +430,21 @@ export class Spotify {
 
 	// Request function
 	private async makeRequest<T>(endpoint: string): Promise<T> {
-		const res = await axios({
-			method: 'GET',
-			url: endpoint.startsWith('https://')
-				? endpoint
-				: `${this.BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`,
-			headers: {
-				Authorization: this.token
-			},
-			params: {
-				market: this.options.market
-			}
-		});
+		const url = endpoint.startsWith('https://')
+			? endpoint
+			: `${this.BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
-		return res.data;
+		const res: any = await fetch(
+			`${url}${endpoint.includes('?') ? '&' : '?'}market=${this.options.market}`,
+			{
+				method: 'GET',
+				headers: {
+					Authorization: this.token
+				}
+			}
+		);
+
+		return res;
 	}
 
 	// Get biggest thumbnail
@@ -451,11 +453,6 @@ export class Spotify {
 			images.sort((a, b) => b.width - a.width)[0]?.url || this.manager.options.fallbackThumbnail
 		);
 	}
-}
-
-export interface SpotifyTokenResponse {
-	access_token: string | null;
-	expires_in: number | null;
 }
 
 type SearchType = 'track' | 'playlist' | 'album' | 'artist';
