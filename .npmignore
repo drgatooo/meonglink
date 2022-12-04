@@ -1,0 +1,7 @@
+.git/
+node_modules/
+src/
+.gitignore
+.prettierrc
+pnpm-lock.yaml
+tsconfig.json
