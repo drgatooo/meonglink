@@ -86,6 +86,16 @@ export class Player {
 			query = `${src}:${query}`;
 		}
 
+		const errorRes: (err?: string) => SearchResult = err => ({
+			loadType: 'NoMatches',
+			tracks: [],
+			exception: {
+				message: err ?? 'Unsupported platform.',
+				severity: 'COMMON'
+			},
+			playlistInfo: undefined
+		});
+
 		if (
 			source == 'youtube' ||
 			source == 'soundcloud' ||
@@ -96,27 +106,29 @@ export class Player {
 		} else {
 			// TODO: Add support for other platforms
 			if (source == 'spotify') {
-				if (!this.manager.spotify?.ready) throw new Error('Spotify is not ready.');
+				if (!this.manager.spotify?.ready) return errorRes('Spotify is not ready.');
 				return this.manager.spotify.search(this, query, requester);
+			}
+
+			if (source == 'deezer') {
+				if (!this.manager.deezer) return errorRes('Deezer is not ready.');
+				return this.manager.deezer.search(this, query, requester);
 			}
 
 			if (source == 'query') {
 				if (platform == 'spotify' && this.manager.spotify?.ready) {
-					if (!this.manager.spotify?.ready) throw new Error('Spotify is not ready.');
+					if (!this.manager.spotify?.ready) return errorRes('Spotify is not ready.');
 					return this.manager.spotify.search(this, query, requester);
+				}
+
+				if (platform == 'deezer') {
+					if (!this.manager.deezer) return errorRes('Deezer is not ready.');
+					return this.manager.deezer.search(this, query, requester);
 				}
 			}
 		}
 
-		return {
-			loadType: 'NoMatches',
-			tracks: [],
-			exception: {
-				message: 'Unsupported platform.',
-				severity: 'COMMON'
-			},
-			playlistInfo: undefined
-		};
+		return errorRes();
 	}
 
 	private async _searchForSupportedSources(q: string, requester: unknown): Promise<SearchResult> {
@@ -145,7 +157,9 @@ export class Player {
 		const result: SearchResult = {
 			loadType: lt[res.loadType],
 			exception: res.exception ?? undefined,
-			tracks: res.tracks.map((track: LavalinkTrack) => Utils.buildTrackFromRaw(track, requester))
+			tracks: res.tracks.map((track: LavalinkTrack) =>
+				Utils.buildTrackFromRaw(track, requester, undefined, this.manager)
+			)
 		};
 
 		if (result.loadType == 'PlaylistLoaded') {

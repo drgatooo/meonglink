@@ -1,10 +1,12 @@
 import type { LavalinkTrack, Track } from '../typings';
+import type { MeongLink } from './MeongLink';
 
 export class Utils {
 	public static buildTrackFromRaw(
 		raw: LavalinkTrack,
 		requester: any,
-		data: Record<string, any> = {}
+		data: Record<string, any> = {},
+		manager?: MeongLink
 	): typeof raw extends undefined ? undefined : Track {
 		// @ts-ignore
 		if (!raw) return undefined;
@@ -23,7 +25,7 @@ export class Utils {
 			identifier: data['identifier'] ?? raw.info.identifier,
 			isSeekable: raw.info.isSeekable,
 			isStream: raw.info.isStream,
-			thumbnail: data['thumbnail'] ?? raw.info.thumbnail,
+			thumbnail: data['thumbnail'] ?? raw.info.thumbnail ?? manager?.options.fallbackThumbnail,
 			title: data['title'] ?? raw.info.title,
 			track: raw.track,
 			uri: data['uri'] ?? raw.info.uri,
@@ -89,9 +91,9 @@ export class Utils {
 			if ('string' != typeof t.identifier) return false;
 			if ('boolean' != typeof t.isSeekable) return false;
 			if ('boolean' != typeof t.isStream) return false;
-			if ('string' != typeof t.thumbnail) return false;
-			if ('string' != typeof t.uri) return false;
-			if ('boolean' != typeof t.explicit) return false;
+			if (t.thumbnail && 'string' != typeof t.thumbnail) return false;
+			if (t.uri && 'string' != typeof t.uri) return false;
+			if (t.explicit && 'boolean' != typeof t.explicit) return false;
 		}
 
 		return true;

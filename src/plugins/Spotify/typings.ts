@@ -141,6 +141,7 @@ export interface SpotifySearchResult<T extends 'tracks' | 'albums' | 'playlists'
 }
 
 export interface SpotifyCustomResponse {
+	error?: boolean;
 	tracks: SpotifyTrack[];
 	name?: string;
 	thumbnail?: string;

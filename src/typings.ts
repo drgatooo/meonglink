@@ -9,7 +9,6 @@ export interface MeongLinkOptions {
 	searchOptions: SearchOptions;
 	sendFunction: SendFunction;
 	fallbackThumbnail?: string;
-	cachePreviousTracks?: boolean;
 }
 
 export interface NodeOptions {
@@ -42,17 +41,22 @@ export interface NodeStats {
 
 export interface SearchOptions {
 	defaultPlatform: Platform;
-	disableYoutube?: boolean;
 	spotify?: SpotifyOptions;
 	deezer?: BasePluginOptions;
 	appleMusic?: AppleMusicOptions;
 }
 
 export interface BasePluginOptions {
-	enabled?: boolean;
+	enabled?: true;
 	playlistLimit?: number;
 	albumLimit?: number;
 	artistLimit?: number;
+}
+
+export interface DeezerOptions extends BasePluginOptions {
+	useISRC?: boolean;
+	failIfNotFoundWithISRC?: boolean;
+	templateArtistPopularPlaylist?: string;
 }
 
 export interface SpotifyOptions extends BasePluginOptions {
@@ -126,7 +130,7 @@ export interface Track {
 	title: string;
 	authors: TrackAuthor[];
 	duration: number;
-	thumbnail: string;
+	thumbnail?: string;
 	uri: string;
 	isSeekable: boolean;
 	isStream: boolean;
@@ -180,7 +184,7 @@ export interface RawTrackInfo {
 	isSeekable: boolean;
 	isStream: boolean;
 	uri: string;
-	thumbnail: string | null;
+	thumbnail?: string | null;
 }
 
 export interface SearchResult

@@ -44,7 +44,13 @@ export class Spotify {
 	// Spotify token request
 	private async renew() {
 		const expiresIn = await this.renewToken();
-		setTimeout(() => this.renew(), expiresIn);
+		setTimeout(
+			() =>
+				this.renew().catch(() =>
+					console.error('[meonglink#Spotify] Error while renewing Spotify token :c')
+				),
+			expiresIn
+		);
 	}
 	private async renewToken() {
 		const { data }: { data: SpotifyTokenResponse } = await axios({
@@ -122,6 +128,8 @@ export class Spotify {
 		switch (type) {
 			case 'track': {
 				const track = await this.getTrack(id!);
+				if (!track || track.error) break;
+
 				const resolved = await this.resolve(track.tracks[0]!, player, requester);
 
 				if (!resolved) {
@@ -143,6 +151,8 @@ export class Spotify {
 
 			case 'album': {
 				const tracks = await this.getAlbumTracks(id!);
+				if (!tracks || tracks.error) break;
+
 				const tracksToPush = [];
 
 				for (const track of tracks.tracks) {
@@ -166,6 +176,8 @@ export class Spotify {
 
 			case 'playlist': {
 				const tracks = await this.getPlaylistTracks(id!);
+				if (!tracks || tracks.error) break;
+
 				const tracksToPush = [];
 
 				for (const track of tracks.tracks) {
@@ -189,6 +201,8 @@ export class Spotify {
 
 			case 'artist': {
 				const tracks = await this.getArtistTopTracks(id!);
+				if (!tracks || tracks.error) break;
+
 				const tracksToPush = [];
 
 				for (const track of tracks.tracks) {
@@ -250,7 +264,8 @@ export class Spotify {
 
 	// Spotify track search
 	private async getTrack(id: string): Promise<SpotifyCustomResponse> {
-		const res = await this.makeRequest<SpotifyTrack>(`/tracks/${id}`);
+		const res = await this.makeRequest<SpotifyTrack>(`/tracks/${id}`).catch(() => null);
+		if (!res) return { tracks: [], error: true };
 		return {
 			tracks: [res]
 		};
@@ -258,16 +273,16 @@ export class Spotify {
 
 	// Spotify album search
 	private async getAlbumTracks(id: string): Promise<SpotifyCustomResponse> {
-		const album = await this.makeRequest<SpotifyAlbum>(`/albums/${id}`);
+		const album = await this.makeRequest<SpotifyAlbum>(`/albums/${id}`).catch(() => null);
+		if (!album) return { tracks: [], error: true };
 		const tracks = await Promise.all(
 			Utils.filterNullOrUndefined(album.tracks.items).map(item => this.getTrack(item.id))
 		);
 		let next = album.tracks.next;
-		let page = 1;
 
 		while (
 			next != null &&
-			(!this.options.albumLimit ? true : page < (this.options.albumLimit || 50))
+			(!this.options.albumLimit ? true : tracks.length < (this.options.albumLimit || 50))
 		) {
 			const nextPage = await this.makeRequest<SpotifyAlbumTracks>(next!);
 			const nextTracks = await Promise.all(
@@ -275,11 +290,10 @@ export class Spotify {
 			);
 			tracks.push(...nextTracks);
 			next = nextPage.next;
-			page++;
 		}
 
 		return {
-			tracks: tracks.map(x => x.tracks[0]!),
+			tracks: tracks.map(x => x.tracks[0]!).slice(0, this.options.albumLimit || 50),
 			name: album.name,
 			thumbnail: this.getThumbnail(album.images)
 		};
@@ -287,22 +301,21 @@ export class Spotify {
 
 	// Spotify playlist search
 	private async getPlaylistTracks(id: string): Promise<SpotifyCustomResponse> {
-		const playlist = await this.makeRequest<SpotifyPlaylist>(`/playlists/${id}`);
+		const playlist = await this.makeRequest<SpotifyPlaylist>(`/playlists/${id}`).catch(() => null);
+		if (!playlist) return { tracks: [], error: true };
 		const tracks = Utils.filterNullOrUndefined(playlist.tracks.items).map(x => x.track);
 
 		let next = playlist.tracks.next;
-		let page = 1;
 
 		while (
 			next != null &&
-			(!this.options.albumLimit ? true : page < (this.options.albumLimit || 50))
+			(!this.options.albumLimit ? true : tracks.length < (this.options.playlistLimit || 50))
 		) {
 			const nextPage = await this.makeRequest<SpotifyPlaylistTracks>(next!);
 			const nextTracks = Utils.filterNullOrUndefined(nextPage.items).map(x => x.track);
 
 			tracks.push(...nextTracks);
 			next = nextPage.next;
-			page++;
 		}
 
 		return {
@@ -314,20 +327,25 @@ export class Spotify {
 
 	// Spotify artist top tracks search
 	private async getArtistTopTracks(id: string): Promise<SpotifyCustomResponse> {
-		const artist = await this.makeRequest<SpotifyArtist>(`/artists/${id}`);
+		const artist = await this.makeRequest<SpotifyArtist>(`/artists/${id}`).catch(() => null);
+		if (!artist) return { tracks: [], error: true };
 		const playlist = await this.makeRequest<SpotifyArtistTracks>(`/artists/${id}/top-tracks`);
 		const tracks = Utils.filterNullOrUndefined(playlist.tracks);
 
 		return {
-			tracks,
+			tracks: tracks.slice(0, this.options.artistLimit || 50),
 			name: this.options.templateArtistPopularPlaylist.replace('{artist}', artist.name),
 			thumbnail: artist.images.sort((a, b) => b.width - a.width)[0]?.url
 		};
 	}
 
 	// Spotify artist search
-	public getArtistInfo(id: string): Promise<SpotifyArtist> {
-		return this.makeRequest<SpotifyArtist>(`/artists/${id}`);
+	public async getArtistInfo(id: string): Promise<SpotifyArtist | null> {
+		try {
+			return await this.makeRequest<SpotifyArtist>(`/artists/${id}`);
+		} catch {
+			return null;
+		}
 	}
 
 	// Utilities
@@ -336,7 +354,9 @@ export class Spotify {
 		data: LavalinkTrack,
 		requester: unknown
 	): Promise<Track> {
-		const artists = await Promise.all(track.artists.map(artist => this.getArtistInfo(artist.id)));
+		const artists = (
+			await Promise.all(track.artists.map(artist => this.getArtistInfo(artist.id)))
+		).map(x => (!!x ? x : { name: 'Unknown', external_urls: { spotify: '' }, images: [] }));
 
 		return {
 			authors: artists.map(artist => ({
@@ -365,14 +385,14 @@ export class Spotify {
 		requester: unknown
 	): Promise<Track | undefined> {
 		const platform = this.manager.options.searchOptions.defaultPlatform;
-		const src = platform_codes[platform] || 'ytmsearch';
+		const src = platform_codes[platform] || 'ytsearch';
 
 		const query = this.options.useISRC
-			? track.external_ids.isrc
+			? `\\"${track.external_ids.isrc}"\\`
 			: `${track.name} - ${track.artists.map(x => x.name).join(', ')}`;
 
 		const searchParams = new URLSearchParams({
-			identifier: `${src}:${query}`
+			identifier: `${this.options.useISRC ? 'ytsearch' : src}:${query}`
 		});
 		let data = await player.node.makeRequest<LavalinkResponse>(
 			`/loadtracks?${searchParams.toString()}`
@@ -380,7 +400,7 @@ export class Spotify {
 
 		if (!data.tracks?.length && this.options.useISRC && !this.options.failIfNotFoundWithISRC) {
 			const nsp = new URLSearchParams({
-				identifier: `${track.name} - ${track.artists.map(x => x.name).join(', ')}`
+				identifier: `${src}:${track.name} - ${track.artists.map(x => x.name).join(', ')}`
 			});
 			data = await player.node.makeRequest<LavalinkResponse>(`/loadtracks?${nsp.toString()}`);
 		}

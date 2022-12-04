@@ -1,6 +1,7 @@
 import { Collection } from '@discordjs/collection';
 import { EventEmitter } from 'node:events';
 import { checkOptions } from '../check';
+import { Deezer } from '../plugins/Deezer';
 import { Spotify } from '../plugins/Spotify';
 import type {
 	MeongEvents,
@@ -31,8 +32,7 @@ export class MeongLink extends EventEmitter {
 				searchOptions: {
 					defaultPlatform: 'youtube music'
 				},
-				fallbackThumbnail: 'https://discussions.apple.com/content/attachment/881765040',
-				cachePreviousTracks: true
+				fallbackThumbnail: 'https://discussions.apple.com/content/attachment/881765040'
 			},
 			options
 		);
@@ -46,9 +46,27 @@ export class MeongLink extends EventEmitter {
 					useISRC: true,
 					failIfNotFoundWithISRC: true,
 					market: 'US',
-					playlistLimit: 1,
-					albumLimit: 1,
-					artistLimit: 1,
+					playlistLimit: 50,
+					albumLimit: 50,
+					artistLimit: 50,
+					templateArtistPopularPlaylist: 'Top Songs by {artist}',
+					...options
+				},
+				this
+			);
+		}
+
+		if (this.options.searchOptions.deezer?.enabled) {
+			const options = this.options.searchOptions.deezer;
+
+			this.deezer = new Deezer(
+				{
+					enabled: true,
+					useISRC: true,
+					failIfNotFoundWithISRC: true,
+					playlistLimit: 50,
+					albumLimit: 50,
+					artistLimit: 50,
 					templateArtistPopularPlaylist: 'Top Songs by {artist}',
 					...options
 				},
@@ -69,7 +87,7 @@ export class MeongLink extends EventEmitter {
 	public clientId?: string;
 	public clientName: string = 'Discord Bot';
 	public readonly spotify?: Spotify;
-	public readonly deezer?: Spotify;
+	public readonly deezer?: Deezer;
 	public readonly appleMusic?: Spotify;
 
 	public init(clientId?: string) {

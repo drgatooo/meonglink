@@ -162,10 +162,6 @@ export function checkOptions(options: MeongLinkOptions) {
 	if (options.fallbackThumbnail && typeof options.fallbackThumbnail != 'string') {
 		throw new Error('MeongLinkOptions.fallbackThumbnail must be a string.');
 	}
-
-	if (options.cachePreviousTracks && typeof options.cachePreviousTracks != 'boolean') {
-		throw new Error('MeongLinkOptions.cachePreviousTracks must be a boolean.');
-	}
 }
 
 export function checkNode(node: NodeOptions) {
