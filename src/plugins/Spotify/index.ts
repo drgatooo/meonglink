@@ -263,7 +263,7 @@ export class Spotify {
 	}
 
 	// Spotify track search
-	private async getTrack(id: string): Promise<SpotifyCustomResponse> {
+	public async getTrack(id: string): Promise<SpotifyCustomResponse> {
 		const res = await this.makeRequest<SpotifyTrack>(`/tracks/${id}`).catch(() => null);
 		if (!res) return { tracks: [], error: true };
 		return {
@@ -272,7 +272,7 @@ export class Spotify {
 	}
 
 	// Spotify album search
-	private async getAlbumTracks(id: string): Promise<SpotifyCustomResponse> {
+	public async getAlbumTracks(id: string): Promise<SpotifyCustomResponse> {
 		const album = await this.makeRequest<SpotifyAlbum>(`/albums/${id}`).catch(() => null);
 		if (!album) return { tracks: [], error: true };
 		const tracks = await Promise.all(
@@ -300,7 +300,7 @@ export class Spotify {
 	}
 
 	// Spotify playlist search
-	private async getPlaylistTracks(id: string): Promise<SpotifyCustomResponse> {
+	public async getPlaylistTracks(id: string): Promise<SpotifyCustomResponse> {
 		const playlist = await this.makeRequest<SpotifyPlaylist>(`/playlists/${id}`).catch(() => null);
 		if (!playlist) return { tracks: [], error: true };
 		const tracks = Utils.filterNullOrUndefined(playlist.tracks.items).map(x => x.track);
@@ -326,7 +326,7 @@ export class Spotify {
 	}
 
 	// Spotify artist top tracks search
-	private async getArtistTopTracks(id: string): Promise<SpotifyCustomResponse> {
+	public async getArtistTopTracks(id: string): Promise<SpotifyCustomResponse> {
 		const artist = await this.makeRequest<SpotifyArtist>(`/artists/${id}`).catch(() => null);
 		if (!artist) return { tracks: [], error: true };
 		const playlist = await this.makeRequest<SpotifyArtistTracks>(`/artists/${id}/top-tracks`);
