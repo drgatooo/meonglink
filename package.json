@@ -1,6 +1,6 @@
 {
 	"name": "meonglink",
-	"version": "0.0.3-alpha",
+	"version": "0.0.4-alpha",
 	"description": "An easy way to use Lavalink in Node.js",
 	"main": "dist/index.js",
 	"typings": "types/index.d.ts",

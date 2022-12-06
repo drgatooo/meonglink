@@ -215,7 +215,7 @@ export class Player {
 			throw new Error('Amount is greater than the queue size.');
 		}
 
-		this.queue.splice(0, amount - 1);
+		this.queue.previous.push(...this.queue.splice(0, amount - 1));
 
 		this.node.send({
 			op: 'stop',
