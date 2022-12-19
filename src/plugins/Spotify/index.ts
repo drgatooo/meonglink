@@ -275,8 +275,10 @@ export class Spotify {
 	public async getAlbumTracks(id: string): Promise<SpotifyCustomResponse> {
 		const album = await this.makeRequest<SpotifyAlbum>(`/albums/${id}`).catch(() => null);
 		if (!album) return { tracks: [], error: true };
-		const tracks = await Promise.all(
-			Utils.filterNullOrUndefined(album.tracks.items).map(item => this.getTrack(item.id))
+		const tracks = Utils.filterNullOrUndefined(
+			await Promise.all(
+				Utils.filterNullOrUndefined(album.tracks.items).map(item => this.getTrack(item.id))
+			)
 		);
 		let next = album.tracks.next;
 
@@ -288,7 +290,7 @@ export class Spotify {
 			const nextTracks = await Promise.all(
 				Utils.filterNullOrUndefined(nextPage.items).map(item => this.getTrack(item.id))
 			);
-			tracks.push(...nextTracks);
+			tracks.push(...Utils.filterNullOrUndefined(nextTracks));
 			next = nextPage.next;
 		}
 
@@ -405,9 +407,23 @@ export class Spotify {
 			data = await player.node.makeRequest<LavalinkResponse>(`/loadtracks?${nsp.toString()}`);
 		}
 
+		let isPreview = false;
+
+		if (!data.tracks?.length) {
+			const nsp = new URLSearchParams({
+				identifier: track.preview_url
+			});
+			data = await player.node.makeRequest<LavalinkResponse>(`/loadtracks?${nsp.toString()}`);
+			isPreview = true;
+		}
+
 		const lavatrack = data.tracks?.[0];
 		if (lavatrack) {
-			return this.build(track, lavatrack, requester);
+			return this.build(
+				{ ...track, name: `${track.name}${isPreview ? ' - Preview' : ''}` },
+				lavatrack,
+				requester
+			);
 		} else return undefined;
 	}
 

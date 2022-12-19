@@ -100,7 +100,7 @@ export class Utils {
 	}
 
 	public static filterNullOrUndefined<T>(array: (T | undefined | null)[]): T[] {
-		return array.filter(x => !!x) as T[];
+		return array.filter(x => x !== null && x !== undefined) as T[];
 	}
 
 	public static toDurationString(ms: number) {
