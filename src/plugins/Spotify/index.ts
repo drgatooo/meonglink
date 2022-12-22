@@ -169,7 +169,8 @@ export class Spotify {
 						tracks: tracksToPush,
 						playlistInfo: {
 							duration: tracksToPush.reduce((acc, cur) => acc + cur.duration, 0),
-							name: tracks.name || tracksToPush[0]!.title
+							name: tracks.name || tracksToPush[0]!.title,
+							thumbnail: tracks.thumbnail
 						}
 					};
 				}
@@ -194,7 +195,8 @@ export class Spotify {
 						tracks: tracksToPush,
 						playlistInfo: {
 							duration: tracksToPush.reduce((acc, cur) => acc + cur.duration, 0),
-							name: tracks.name || tracksToPush[0]!.title
+							name: tracks.name || tracksToPush[0]!.title,
+							thumbnail: tracks.thumbnail
 						}
 					};
 				}
@@ -219,7 +221,8 @@ export class Spotify {
 						tracks: tracksToPush,
 						playlistInfo: {
 							duration: tracksToPush.reduce((acc, cur) => acc + cur.duration, 0),
-							name: tracks.name || tracksToPush[0]!.title
+							name: tracks.name || tracksToPush[0]!.title,
+							thumbnail: tracks.thumbnail
 						}
 					};
 				}
@@ -275,10 +278,9 @@ export class Spotify {
 	public async getAlbumTracks(id: string): Promise<SpotifyCustomResponse> {
 		const album = await this.makeRequest<SpotifyAlbum>(`/albums/${id}`).catch(() => null);
 		if (!album) return { tracks: [], error: true };
-		const tracks = Utils.filterNullOrUndefined(
-			await Promise.all(
-				Utils.filterNullOrUndefined(album.tracks.items).map(item => this.getTrack(item.id))
-			)
+		const trackIds = Utils.filterNullOrUndefined(album.tracks.items.map(item => item.id));
+		const { tracks } = await this.makeRequest<{ tracks: SpotifyTrack[] }>(
+			`/tracks?ids=${trackIds.join(',')}`
 		);
 		let next = album.tracks.next;
 
@@ -287,15 +289,16 @@ export class Spotify {
 			(!this.options.albumLimit ? true : tracks.length < (this.options.albumLimit || 50))
 		) {
 			const nextPage = await this.makeRequest<SpotifyAlbumTracks>(next!);
-			const nextTracks = await Promise.all(
-				Utils.filterNullOrUndefined(nextPage.items).map(item => this.getTrack(item.id))
+			const nextTrackIds = Utils.filterNullOrUndefined(nextPage.items.map(item => item.id));
+			const { tracks } = await this.makeRequest<{ tracks: SpotifyTrack[] }>(
+				`/tracks?ids=${nextTrackIds.join(',')}`
 			);
-			tracks.push(...Utils.filterNullOrUndefined(nextTracks));
+			tracks.push(...Utils.filterNullOrUndefined(tracks));
 			next = nextPage.next;
 		}
 
 		return {
-			tracks: tracks.map(x => x.tracks[0]!).slice(0, this.options.albumLimit || 50),
+			tracks: tracks.slice(0, this.options.albumLimit || 50),
 			name: album.name,
 			thumbnail: this.getThumbnail(album.images)
 		};
@@ -342,11 +345,11 @@ export class Spotify {
 	}
 
 	// Spotify artist search
-	public async getArtistInfo(id: string): Promise<SpotifyArtist | null> {
+	public getArtistInfo(id: string): Promise<SpotifyArtist | null> {
 		try {
-			return await this.makeRequest<SpotifyArtist>(`/artists/${id}`);
+			return this.makeRequest<SpotifyArtist>(`/artists/${id}`);
 		} catch {
-			return null;
+			return Promise.reject(null);
 		}
 	}
 
@@ -357,7 +360,9 @@ export class Spotify {
 		requester: unknown
 	): Promise<Track> {
 		const artists = (
-			await Promise.all(track.artists.map(artist => this.getArtistInfo(artist.id)))
+			await Promise.all(
+				track.artists.map(artist => this.getArtistInfo(artist.id).catch(() => null))
+			)
 		).map(x => (!!x ? x : { name: 'Unknown', external_urls: { spotify: '' }, images: [] }));
 
 		return {
@@ -402,7 +407,7 @@ export class Spotify {
 
 		if (!data.tracks?.length && this.options.useISRC && !this.options.failIfNotFoundWithISRC) {
 			const nsp = new URLSearchParams({
-				identifier: `${src}:${track.name} - ${track.artists.map(x => x.name).join(', ')}`
+				identifier: `${src}:${track.name} - ${track.artists.map(x => x.name).join(', ')} audio`
 			});
 			data = await player.node.makeRequest<LavalinkResponse>(`/loadtracks?${nsp.toString()}`);
 		}
