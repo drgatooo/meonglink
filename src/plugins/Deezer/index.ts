@@ -14,7 +14,7 @@ import type {
 	DeezerSearchResult,
 	DeezerTrack,
 	PartialDeezerTrack
-} from '../../typings';
+} from '../..';
 
 export class Deezer {
 	private BASE_URL = 'https://api.deezer.com';

@@ -8,7 +8,7 @@ import type {
 	PlayerSearchOptions,
 	SearchResult,
 	VoiceState
-} from '../typings';
+} from '..';
 import type { MeongLink } from './MeongLink';
 import type { Node } from './Node';
 import { Queue } from './Queue';
@@ -33,6 +33,7 @@ export class Player {
 			options
 		);
 
+		this.volume = this.options.volume || 90;
 		this.voiceChannelId = this.options.voiceChannelId;
 		this.textChannelId = this.options.textChannelId;
 		this.guildId = this.options.guildId;
@@ -57,7 +58,7 @@ export class Player {
 	public voiceState: Partial<VoiceState>;
 	public state: PlayerState = 'Disconnected';
 	public node: Node;
-	public volume = this.options.volume || 90;
+	public volume = 90;
 	public loopType: LoopType = 'disabled';
 	public isPaused = false;
 	public isPlaying = false;

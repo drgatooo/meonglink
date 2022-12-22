@@ -1,4 +1,4 @@
-import type { Track } from '../typings';
+import type { Track } from '..';
 import { Utils } from './Util';
 
 export class Queue extends Array<Track> {

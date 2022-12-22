@@ -11,7 +11,7 @@ import type {
 	VoicePacket,
 	VoiceServer,
 	VoiceState
-} from '../typings';
+} from '..';
 import { Node } from './Node';
 import { Player } from './Player';
 

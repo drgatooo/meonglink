@@ -14,7 +14,7 @@ import type {
 	TrackStuckEvent,
 	Unpartial,
 	WebSocketClosedEvent
-} from '../typings';
+} from '..';
 import type { MeongLink } from './MeongLink';
 import type { Player } from './Player';
 

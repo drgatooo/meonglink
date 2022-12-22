@@ -16,7 +16,7 @@ import type {
 	SpotifySearchResult,
 	SpotifyTrack,
 	SpotifyTokenResponse
-} from '../../typings';
+} from '../..';
 import { fetch } from 'undici';
 import type { MeongLink } from '../../structures/MeongLink';
 import { Utils } from '../../structures/Util';
@@ -109,7 +109,9 @@ export class Spotify {
 
 		if (!id) {
 			const search = await this.searchSpotify(query, type, 1);
-			const item = search.items[0]!;
+			if (!search) return response;
+
+			const item = search?.items[0]!;
 
 			if (
 				this.isTrack(item) ||
@@ -262,7 +264,7 @@ export class Spotify {
 			}
 		).then(x => x.json() as Promise<any>);
 
-		return data[typePlural]!;
+		return data[typePlural];
 	}
 
 	// Spotify track search

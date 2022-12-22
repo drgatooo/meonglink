@@ -1,4 +1,4 @@
-import type { LavalinkTrack, Track } from '../typings';
+import type { LavalinkTrack, Track } from '..';
 import type { MeongLink } from './MeongLink';
 
 export class Utils {

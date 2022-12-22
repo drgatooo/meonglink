@@ -1,4 +1,4 @@
-import type { MeongLinkOptions, NodeOptions } from './typings';
+import type { MeongLinkOptions, NodeOptions } from '.';
 
 export function checkOptions(options: MeongLinkOptions) {
 	if (!Array.isArray(options.nodes) || !options.nodes.length) {
