@@ -521,7 +521,7 @@ export interface SpotifyPartialTrack {
 export interface SpotifyTrack extends SpotifyPartialTrack {
 	album: SpotifyPartialAlbum;
 	external_ids: {
-		isrc: string;
+		isrc?: string;
 	};
 	popularity: number;
 }

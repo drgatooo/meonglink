@@ -111,7 +111,9 @@ export class Spotify {
 			const search = await this.searchSpotify(query, type, 1);
 			if (!search) return response;
 
-			const item = search?.items[0]!;
+			const item = search?.items[0];
+
+			if (!item) return response;
 
 			if (
 				this.isTrack(item) ||
@@ -396,9 +398,12 @@ export class Spotify {
 		const platform = this.manager.options.searchOptions.defaultPlatform;
 		const src = platform_codes[platform] || 'ytsearch';
 
-		const query = this.options.useISRC
-			? `\\"${track.external_ids.isrc}"\\`
-			: `${track.name} - ${track.artists.map(x => x.name).join(', ')}`;
+		if (!track.name || !track.artists) return;
+
+		const query =
+			this.options.useISRC && track.external_ids?.isrc
+				? `\\"${track.external_ids.isrc}"\\`
+				: `${track.name} - ${track.artists.map(x => x.name).join(', ')}`;
 
 		const searchParams = new URLSearchParams({
 			identifier: `${this.options.useISRC ? 'ytsearch' : src}:${query}`

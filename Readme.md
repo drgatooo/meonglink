@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./img/banner.png" height="150px">
+  <img src="https://i.imgur.com/C3dvHKx.png" height="150px">
 
   <p align="center">
     <a href="https://www.npmjs.com/package/meonglink">
