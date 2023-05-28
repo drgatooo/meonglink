@@ -213,7 +213,18 @@ export class Player {
 		if (amount < 1) throw new Error('Amount must be greater than 0.');
 
 		if (amount > this.queue.length) {
-			throw new Error('Amount is greater than the queue size.');
+			if (this.loopType == 'queue') {
+				if (this.queue.length + this.queue.previous.length < amount) {
+					throw new Error(
+						'Amount is greater than the queue size. If you want to stop player, use stop() instead.'
+					);
+				}
+
+				this.queue.previous.push(...this.queue.splice(0, amount - 1));
+			}
+			throw new Error(
+				'Amount is greater than the queue size. If you want to stop player, use stop() instead.'
+			);
 		}
 
 		this.queue.previous.push(...this.queue.splice(0, amount - 1));
@@ -222,6 +233,16 @@ export class Player {
 			op: 'stop',
 			guildId: this.options.guildId,
 			amount
+		});
+
+		return this;
+	}
+
+	public stop() {
+		this.queue.clear();
+		this.node.send({
+			op: 'stop',
+			guildId: this.options.guildId
 		});
 
 		return this;

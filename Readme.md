@@ -27,6 +27,8 @@ $ npm i meonglink
 $ yarn add meonglink
 ```
 
+> If you prefer a lightweight variant, you should add `@light` after the package name.
+
 ## 📃 Example usage
 
 You can find a Discord bot that works with this package [here](https://github.com/meong-bot/meong-code). I'll add more examples later.
